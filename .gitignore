@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints (if any)
+.ipynb_checkpoints
+
+# Virtual environment
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Streamlit cache and logs
+.streamlit/
+**/.streamlit/config.toml
+**/.streamlit/secrets.toml
+**/.streamlit/*.json
+**/.streamlit/*.db
+**/.streamlit/*.log
+
+# Local data and logs
+data/
+*.log
+*.sqlite3
+
+# Secrets (LLM API keys etc.)
+secrets.json
+.env
+.env.*
+
+# IDE settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Test, coverage and profiling
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.*
+.cache
+.pytest_cache/
+tests/__pycache__/
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+*.egg
+MANIFEST
+
+# Streamlit Community Cloud deployment artifacts
+.streamlit/config.toml
+
+# Animation/video output
+*.mp4
+*.gif
+
+# extra
+to-do*
