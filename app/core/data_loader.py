@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np 
 import ast
 import os
 
@@ -13,27 +14,29 @@ def safe_parse_list(val):
     except Exception:
         return [float('nan')]
 
-def load_tsla_data(filepath = "data/tsla_data.csv"):
+def mean_of_list_or_nan(lst):
+    if isinstance(lst, list) and lst:
+        return np.mean(lst)
+    else:
+        return float('nan')
+
+def load_tsla_data(filepath="data/tsla_data.csv"):
     """Load and preprocess TSLA stock data from a CSV file."""
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"TSLA data file not found at {filepath}")
 
     df = pd.read_csv(filepath)
 
-    # Convert timestamp
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')  # ensures datetime format
+    df = df.dropna(subset=['timestamp'])  # drop rows where timestamp failed to parse
+    df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%d')  # now safe to use .dt
 
-    # Parse Support and Resistance columns
-    df['Support'] = df['Support'].apply(safe_parse_list)
-    df['Resistance'] = df['Resistance'].apply(safe_parse_list)
+    # Parse 'Support' and 'Resistance' columns (assuming they are stringified lists)
+    if 'Support' in df.columns:
+        df['Support'] = df['Support'].apply(safe_parse_list).apply(mean_of_list_or_nan)
+    if 'Resistance' in df.columns:
+        df['Resistance'] = df['Resistance'].apply(safe_parse_list).apply(mean_of_list_or_nan)
 
-    # Add min and max values for plotting bands
-    df['support_min'] = df['Support'].apply(min)
-    df['support_max'] = df['Support'].apply(max)
-    df['resistance_min'] = df['Resistance'].apply(min)
-    df['resistance_max'] = df['Resistance'].apply(max)
-
-    # Price trend info
-    df['bullish'] = df['close'] > df['open']
+    df = df.dropna(subset=['open', 'high', 'low', 'close'])
 
     return df
