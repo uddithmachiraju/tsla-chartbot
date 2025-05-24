@@ -1,46 +1,64 @@
+def get_bands_data(data):
+    support_band = []
+    resistance_band = []
 
-def parse_numeric_list(val):
-    """
-    Parses a string or list-like value to a list of floats.
-    Handles malformed or empty strings like ' ', '[', ']', etc.
-    """
-    if isinstance(val, str):
-        val = val.strip("[] ")
-        if val:
-            try:
-                return [float(x.strip()) for x in val.split(',') if x.strip()]
-            except ValueError:
-                return []
-        else:
-            return []
-    elif isinstance(val, (list, tuple)):
-        return [float(x) for x in val if x != '' and x is not None]
-    else:
-        return []
+    for d in data:
+        # Support can be a number or a list
+        if "Support" in d:
+            support = d["Support"]
+            if isinstance(support, list) and support:
+                low = min(support)
+                high = max(support)
+            elif isinstance(support, (int, float)):
+                low = high = support
+            else:
+                continue  # skip if Support is invalid
 
-def generate_support_resistance_bands(df):
-    support_bands = []
-    resistance_bands = []
+            support_band.extend([
+                {"time": d["time"], "value": low, "color": "#22c55e"},
+                {"time": d["time"], "value": high, "color": "#22c55e"}
+            ])
 
-    for _, row in df.iterrows():
-        time_str = row['timestamp'].strftime('%Y-%m-%d')
+        # Resistance can be a number or a list
+        if "Resistance" in d:
+            resistance = d["Resistance"]
+            if isinstance(resistance, list) and resistance:
+                low = min(resistance)
+                high = max(resistance)
+            elif isinstance(resistance, (int, float)):
+                low = high = resistance
+            else:
+                continue  # skip if Resistance is invalid
 
-        # Parse and clean support and resistance values
-        support = parse_numeric_list(row.get('Support'))
-        resistance = parse_numeric_list(row.get('Resistance'))
+            resistance_band.extend([
+                {"time": d["time"], "value": low, "color": "#ef4444"},
+                {"time": d["time"], "value": high, "color": "#ef4444"}
+            ])
 
-        if support:
-            support_bands.append({
-                "time": time_str,
-                "low": min(support),
-                "high": max(support)
-            })
+    bands_series = []
 
-        if resistance:
-            resistance_bands.append({
-                "time": time_str,
-                "low": min(resistance),
-                "high": max(resistance)
-            })
+    if support_band:
+        bands_series.append({
+            "type": "Area",
+            "data": support_band,
+            "options": {
+                "topColor": "#22c55e22",
+                "bottomColor": "#22c55e44",
+                "lineColor": "#22c55e",
+                "lineWidth": 1
+            }
+        })
 
-    return support_bands, resistance_bands
+    if resistance_band:
+        bands_series.append({
+            "type": "Area",
+            "data": resistance_band,
+            "options": {
+                "topColor": "#ef444422",
+                "bottomColor": "#ef444444",
+                "lineColor": "#ef4444",
+                "lineWidth": 1
+            }
+        })
+
+    return bands_series

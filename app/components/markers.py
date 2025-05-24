@@ -1,31 +1,38 @@
+# app/components/markers.py
 
-def generate_markers(df):
+def generate_markers(data):
     markers = []
-    for _, row in df.iterrows():
-        time_str = row['timestamp'].strftime('%Y-%m-%d')
-        direction = row.get('direction', None)
-        if direction == "LONG":
-            markers.append({
-                "time": time_str,
-                "position": "belowBar",
-                "color": "green",
-                "shape": "arrowUp",
-                "text": "LONG"
-            })
-        elif direction == "SHORT":
-            markers.append({
-                "time": time_str,
-                "position": "aboveBar",
-                "color": "red",
-                "shape": "arrowDown",
-                "text": "SHORT"
-            })
-        else:
-            markers.append({
-                "time": time_str,
-                "position": "inBar",
-                "color": "yellow",
-                "shape": "circle",
-                "text": "NEUTRAL"
-            })
+    previous_direction = None
+
+    for d in data:
+        direction = d.get("direction")
+
+        if direction != previous_direction:
+            if direction == "LONG":
+                markers.append({
+                    "time": d["time"],
+                    "position": "belowBar",
+                    "shape": "arrowUp",
+                    "color": "#22c55e",
+                    "text": "LONG"
+                })
+            elif direction == "SHORT":
+                markers.append({
+                    "time": d["time"],
+                    "position": "aboveBar",
+                    "shape": "arrowDown",
+                    "color": "#ef4444",
+                    "text": "SHORT"
+                })
+            elif direction:
+                markers.append({
+                    "time": d["time"],
+                    "position": "inBar",
+                    "shape": "circle",
+                    "color": "#facc15",
+                    "text": "NEUTRAL"
+                })
+
+            previous_direction = direction
+
     return markers
