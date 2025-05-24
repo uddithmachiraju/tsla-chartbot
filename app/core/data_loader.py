@@ -27,9 +27,9 @@ def load_tsla_data(filepath="data/tsla_data.csv"):
 
     df = pd.read_csv(filepath)
 
-    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')  # ensures datetime format
-    df = df.dropna(subset=['timestamp'])  # drop rows where timestamp failed to parse
-    df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%d')  # now safe to use .dt
+    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+    df = df.dropna(subset=['timestamp'])
+    df = df.sort_values(by='timestamp')
 
     # Parse 'Support' and 'Resistance' columns (assuming they are stringified lists)
     if 'Support' in df.columns:
@@ -39,4 +39,10 @@ def load_tsla_data(filepath="data/tsla_data.csv"):
 
     df = df.dropna(subset=['open', 'high', 'low', 'close'])
 
-    return df
+    # Rename timestamp to 'time' for the chart library
+    # df = df.rename(columns={"timestamp": "time"})
+
+    # Sort by time
+    df = df.sort_values(by="timestamp")
+
+    return df[['timestamp', 'open', 'high', 'low', 'close', 'Support', 'Resistance']]

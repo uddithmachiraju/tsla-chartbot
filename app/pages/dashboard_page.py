@@ -1,136 +1,99 @@
-# import streamlit as st
-# from streamlit_lightweight_charts import renderLightweightCharts
-# from app.core.data_loader import load_tsla_data  # Adjust path based on your project structure
+import streamlit as st
+from streamlit_lightweight_charts import renderLightweightCharts
+from data.config import example_data 
 
-# def render():
-#     st.subheader("📈 TSLA Candlestick Chart with Markers and Bands")
+example_data = example_data[:500]
 
-#     # Load preprocessed TSLA data
-#     df = load_tsla_data("data/tsla_data.csv") 
-#     # st.write(df)
+def render():
+    theme = st.sidebar.radio("Choose Theme", ["Dark", "Light"])
+    show_volume = st.sidebar.checkbox("Show Volume", value=True)
+    show_moving_avg = st.sidebar.checkbox("Show Moving Average (SMA)", value=True)
 
-#     # Build candlestick series
-#     candlestick_data = [
-#         {
-#             "time": row["timestamp"],
-#             "open": row["open"],
-#             "high": row["high"],
-#             "low": row["low"],
-#             "close": row["close"]
-#         }
-#         for _, row in df.iterrows()
-#     ]
+    bg_color = "#111827" if theme == "Dark" else "#FFFFFF"
+    text_color = "#e5e7eb" if theme == "Dark" else "#1f2937"
+    grid_color = "#374151" if theme == "Dark" else "#e5e7eb"
 
-#     # st.write(candlestick_data)
+    window_size = 500
+    display_candles = 100  # number of candles to zoom in on
 
-#     # Generate markers
-#     markers = []
-#     for _, row in df.iterrows():
-#         direction = row.get("direction", None)
-#         marker = {
-#             "time": row["timestamp"],
-#             "position": "aboveBar",
-#             "shape": "circle",
-#             "color": "yellow",
-#             "text": "NO DIR"
-#         }
+    total_len = len(example_data)
+    visible_data = example_data[-window_size:]  # Get last 500 candles
 
-#         if direction == "LONG":
-#             marker.update({
-#                 "position": "belowBar",
-#                 "shape": "arrowUp",
-#                 "color": "green",
-#                 "text": "LONG"
-#             })
-#         elif direction == "SHORT":
-#             marker.update({
-#                 "position": "aboveBar",
-#                 "shape": "arrowDown",
-#                 "color": "red",
-#                 "text": "SHORT"
-#             })
-#         markers.append(marker)
-#     # st.write(markers)
+    # Calculate start and end index for zoomed 100 candles in the center
+    start_index = (window_size - display_candles) // 2
+    end_index = start_index + display_candles
+    visible_range = {
+        "from": visible_data[start_index]["time"],
+        "to": visible_data[end_index - 1]["time"]
+    }
 
-#     # Support and Resistance bands
-#     support_lower = []
-#     support_upper = []
-#     resistance_lower = []
-#     resistance_upper = []
+    series = [{
+        "type": "Candlestick",
+        "data": visible_data,
+        "options": {
+            "upColor": "#22c55e",
+            "downColor": "#ef4444",
+            "wickUpColor": "#22c55e",
+            "wickDownColor": "#ef4444",
+            "borderVisible": False
+        }
+    }]
 
-#     for _, row in df.iterrows():
-#         support_vals = row['Support']
-#         resistance_vals = row['Resistance']
-#         time = row['timestamp']
+    if show_volume:
+        volume_data = [
+            {"time": d["time"], "value": d.get("volume", 0), "color": "#22c55e" if d["close"] >= d["open"] else "#ef4444"}
+            for d in visible_data
+        ]
+        series.append({
+            "type": "Histogram",
+            "data": volume_data,
+            "options": {
+                "priceFormat": {"type": "volume"},
+                "color": "#8884d8",
+                "lineWidth": 1.5,
+                "priceLineVisible": False,
+                "scaleMargins": {"top": 0.85, "bottom": 0}
+            }
+        })
 
-#         if isinstance(support_vals, list) and all([val == val for val in support_vals]):
-#             support_lower.append({"time": time, "value": min(support_vals)})
-#             support_upper.append({"time": time, "value": max(support_vals)})
+    if show_moving_avg:
+        def sma(source, period=10):
+            sma_values = []
+            for i in range(len(source)):
+                if i < period - 1:
+                    sma_values.append(None)
+                else:
+                    closes = [source[j]["close"] for j in range(i - period + 1, i + 1)]
+                    sma_values.append(sum(closes) / period)
+            return [{"time": source[i]["time"], "value": v} for i, v in enumerate(sma_values) if v]
 
-#         if isinstance(resistance_vals, list) and all([val == val for val in resistance_vals]):
-#             resistance_lower.append({"time": time, "value": min(resistance_vals)})
-#             resistance_upper.append({"time": time, "value": max(resistance_vals)})
+        sma_data = sma(visible_data, period=10)
+        series.append({
+            "type": "Line",
+            "data": sma_data,
+            "options": {
+                "color": "#3b82f6",
+                "lineWidth": 2,
+                "lineStyle": 0,
+                "crossHairMarkerVisible": True
+            }
+        })
 
-#     # Chart config
-#     chart_options = {
-#         "layout": {
-#             "backgroundColor": "#000000",
-#             "textColor": "white"
-#         },
-#         "grid": {
-#             "vertLines": {"color": "#444444"},
-#             "horzLines": {"color": "#444444"}
-#         },
-#         "priceScale": {"borderColor": "#71649C"},
-#         "timeScale": {"borderColor": "#71649C"},
-#     }
+    config = [{
+        "chart": {
+            "layout": {"background": {"type": "solid", "color": bg_color}, "textColor": text_color},
+            "grid": {"vertLines": {"color": grid_color}, "horzLines": {"color": grid_color}},
+            "crosshair": {"mode": 1},
+            "timeScale": {
+                "borderColor": grid_color,
+                "visible": True,
+                "visibleRange": visible_range
+            },
+            "rightPriceScale": {"borderColor": grid_color},
+            "width": 950,
+            "height": 600
+        },
+        "series": series
+    }]
 
-#     series = [
-#         {
-#             "type": "Candlestick",
-#             "data": candlestick_data,
-#             "markers": markers,
-#             "options": {
-#                 "wickUpColor": "#26a69a",
-#                 "wickDownColor": "#ef5350",
-#                 "borderVisible": False
-#             }
-#         },
-#         {
-#             "type": "Line",
-#             "data": support_lower,
-#             "options": {"color": "green", "lineWidth": 1, "lineStyle": 1}
-#         },
-#         {
-#             "type": "Line",
-#             "data": support_upper,
-#             "options": {"color": "green", "lineWidth": 1, "lineStyle": 1}
-#         },
-#         {
-#             "type": "Line",
-#             "data": resistance_lower,
-#             "options": {"color": "red", "lineWidth": 1, "lineStyle": 1}
-#         },
-#         {
-#             "type": "Line",
-#             "data": resistance_upper,
-#             "options": {"color": "red", "lineWidth": 1, "lineStyle": 1}
-#         }
-#     ]
-
-#     charts = {
-#         "chart": chart_options,
-#         "series": series
-#     }
-
-#     renderLightweightCharts(charts, key="tsla_chart")
-
-from app.core.data_loader import load_tsla_data
-from lightweight_charts.widgets import StreamlitChart
-
-chart = StreamlitChart(width=900, height=600)
-
-df = load_tsla_data()
-chart.set(df)
-
-chart.load()
+    renderLightweightCharts(config)
