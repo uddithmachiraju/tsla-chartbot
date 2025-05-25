@@ -2,3 +2,5 @@ streamlit
 google-generativeai
 lightweight-charts
 streamlit-lightweight-charts
+dotenv
+statistics

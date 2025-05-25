@@ -2,7 +2,7 @@ import json
 import pandas as pd
 import streamlit as st
 from app.core.data_loader import load_tsla_data
-from app.pages import dashboard_page 
+from app.pages import dashboard_page, chatbot_page
 from data.config import data
 
 df, ohlc_list = load_tsla_data("data/TSLA_data.csv", return_ohlc=True)
@@ -27,3 +27,6 @@ tab1, tab2 = st.tabs(["Dashboard", "Chatbot"])
 
 with tab1:
     dashboard_page.render(data[:320])
+
+with tab2:
+    chatbot_page.render() 

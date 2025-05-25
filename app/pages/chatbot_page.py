@@ -1,24 +1,24 @@
-
 import streamlit as st
 from app.llm_agent.gemini_agent import GeminiAgent
 from app.llm_agent.prompt_builder import build_prompt
 from app.llm_agent.qa_templates import TEMPLATE_QUESTIONS
-from app.core.data_loader import load_tsla_data
-from app.core.indicators import count_bullish_days
+from app.core.summary import summarize_data  # NEW
+from data.config import data
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 def render():
     st.title("🤖 TSLA Chatbot")
 
-    # Load data and create summary for prompt context
-    df = load_tsla_data("data/tsla_data.csv")
-    bullish_days = count_bullish_days(df)
-    df_summary = {
-        "Total bullish days": bullish_days,
-        "Total data points": len(df),
-        "Average Close Price": round(df['close'].mean(), 2),
-    }
+    # Load .env API key
+    load_dotenv()
+    api_key = os.getenv("API_KEY")
 
-    api_key = st.text_input("Enter Gemini API Key:", type="password")
+    # Summarize list data
+    df_summary = summarize_data(data)
+
     user_question = st.text_input("Ask a question about TSLA stock data:")
 
     if st.button("Get Answer") and api_key and user_question:
