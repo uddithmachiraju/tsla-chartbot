@@ -98,7 +98,6 @@ def animate_chart(data, show_volume, show_moving_avg, show_bands, theme):
             renderLightweightCharts(config)
         time.sleep(0.5)
 
-
 def render(data):
     # Sidebar options
     theme = st.sidebar.radio("Choose Theme", ["Dark", "Light"])
