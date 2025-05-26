@@ -75,19 +75,20 @@ def render(data):
     if show_bands:
         series.extend(get_bands_data(data))
 
+    # Black-themed chart settings
     config = [{
         "chart": {
             "layout": {
-                "background": {"type": "solid", "color": "#FFFFFF"},
-                "textColor": "#1f2937"
+                "background": {"type": "solid", "color": "#000000"},  # Black background
+                "textColor": "#f3f4f6"  # Light gray text
             },
             "grid": {
-                "vertLines": {"color": "#e5e7eb"},
-                "horzLines": {"color": "#e5e7eb"}
+                "vertLines": {"color": "#4b5563"},
+                "horzLines": {"color": "#4b5563"}
             },
             "crosshair": {"mode": 1},
-            "timeScale": {"borderColor": "#e5e7eb"},
-            "rightPriceScale": {"borderColor": "#e5e7eb"},
+            "timeScale": {"borderColor": "#4b5563"},
+            "rightPriceScale": {"borderColor": "#4b5563"},
             "width": 950,
             "height": 600
         },
