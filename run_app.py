@@ -1,3 +1,4 @@
+import os 
 import json 
 import pandas as pd
 import streamlit as st
@@ -17,6 +18,24 @@ def save_ohlc_json(data, output_path="data/ohlc_data.json"):
         f.write(']\n') 
 
 save_ohlc_json(ohlc_list) 
+
+# Load OHLC data
+with open("data/ohlc_data.json", "r") as f:
+    json_data = json.load(f)
+
+# Format each dictionary as a single line
+lines = ["data = ["]
+for entry in json_data:
+    line = json.dumps(entry, separators=(',', ':'))  # compact format
+    lines.append(line + ',')
+lines[-1] = lines[-1].rstrip(',')  # remove trailing comma on the last item
+lines.append("]")
+
+os.makedirs("data", exist_ok=True)
+
+# Save to config.py
+with open("data/config.py", "w") as f:
+    f.write("\n".join(lines))
 
 with open("data/ohlc_data.json", "r") as file:
     data = json.load(file)
